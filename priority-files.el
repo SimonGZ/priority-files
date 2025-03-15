@@ -2,7 +2,7 @@
 
 ;; Author: Simon Ganz <dev@simonganz.com>
 ;; URL: https://github.com/SimonGZ/priority-files
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "26.1") (projectile "2.0.0"))
 ;; Keywords: convenience, project
 
@@ -43,7 +43,7 @@
     (nreverse files)))
 
 ;;;###autoload
-(defun edit-priority-files ()
+(defun priority-files-edit ()
   "Create or edit the .priority-files file in the current project."
   (interactive)
   (let ((project-root (projectile-project-root)))
@@ -52,7 +52,7 @@
       (message "Not in a project"))))
 
 ;;;###autoload
-(defun priority-file-next (&optional cycle)
+(defun priority-files-next (&optional cycle)
   "Jump to the highest priority file in the current project.
 With CYCLE argument, cycle through priority files in order.
 When already viewing the top priority file, jumps to the second priority file
@@ -91,6 +91,39 @@ even without the CYCLE argument."
       (if (file-exists-p target-file)
           (find-file target-file)
         (message "Priority file not found: %s" target-file)))))
+
+;;;###autoload
+(defun priority-files-add-file ()
+  "Add the current file to the .priority-files list.
+Creates the .priority-files file if it doesn't exist."
+  (interactive)
+  (let ((project-root (projectile-project-root))
+        (current-file (buffer-file-name)))
+    (if (and project-root current-file)
+        (let* ((priority-path (expand-file-name ".priority-files" project-root))
+               (relative-path (file-relative-name current-file project-root)))
+          ;; Create the file if it doesn't exist
+          (unless (file-exists-p priority-path)
+            (with-temp-file priority-path
+              (insert "")))
+
+          ;; Check if the file is already in the list
+          (with-temp-buffer
+            (when (file-exists-p priority-path)
+              (insert-file-contents priority-path))
+            (goto-char (point-min))
+            (if (search-forward relative-path nil t)
+                (message "File already in priority list: %s" relative-path)
+              ;; Add the file to the list
+              (goto-char (point-max))
+              ;; Add a newline if the file is not empty and doesn't end with one
+              (when (and (> (buffer-size) 0)
+                         (not (eq (char-before) ?\n)))
+                (insert "\n"))
+              (insert relative-path "\n")
+              (write-region (point-min) (point-max) priority-path)
+              (message "Added to priority files: %s" relative-path))))
+      (message "Not in a project or no file is open"))))
 
 (provide 'priority-files)
 
