@@ -39,7 +39,7 @@ Then, I run `doom sync` on the command line and restart Emacs for the changes to
        :desc "Jump to top priority file" "j" #'priority-files-next
        :desc "Cycle through priority files" "J" (cmd! (priority-files-next t))
        :desc "Edit priority files" "E" #'priority-files-edit
-       :desc "Add current file to priority files" "a" #'priority-files-add-file))
+       :desc "Add current file to priority files" "A" #'priority-files-add-file))
 ```
 
 ### Commands
