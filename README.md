@@ -29,7 +29,29 @@ Then, I run `doom sync` on the command line and restart Emacs for the changes to
 
 ## Usage
 
-1. **Define Priority Files**: In the root of your project, create a `.priority-files` file listing the relative paths of files you consider priorities, one per line.
+1. **Define Priority Files**: In the root of your project, create a `.priority-files` file listing the relative paths of files you consider priorities, one per line. Blank lines and lines starting with `#` are ignored.
+
+### Dynamic entries
+
+In addition to plain paths, `.priority-files` understands `latest` directives that resolve at runtime. This allows you to jump to "the most recent" file that matches a pattern without editing your list every time.
+
+```
+# Plain entries
+docs/overview.org
+
+# Use the newest markdown note under notes/
+latest notes/*.md
+
+# Prefer the most recently created journal entry
+latest:created journal/**/*.md
+```
+
+The syntax is `latest[:MODE] GLOB`, where `MODE` defaults to `modified`. Valid modes are:
+
+- `modified`: pick the file with the most recent modification time
+- `created`: pick the file with the newest birth/creation time; if the filesystem does not track birth times, the directive automatically falls back to modification time.
+
+Patterns are resolved with `file-expand-wildcards`, so you can use globbing such as `*.md` or `**/*.org`. Only files within the project root are considered.
 
 2. (OPTIONAL) **Keybindings**: Add keybindings to your `config.el` to integrate Priority Files into your workflow:
 
