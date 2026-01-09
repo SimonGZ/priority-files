@@ -63,6 +63,14 @@
          (set-file-times new-file (current-time))
          (should (equal new-file (priority-files--resolve-entry "latest:created notes/*.md" root))))))))
 
+(ert-deftest priority-files-resolve-latest-filename ()
+  (priority-files-test--with-temp-dir
+   (lambda (root)
+     (let ((f1 (priority-files-test--make-file root "notes/20260101.md" "1"))
+           (f2 (priority-files-test--make-file root "notes/20260102.md" "2"))
+           (f3 (priority-files-test--make-file root "notes/20260103.md" "3")))
+       (should (equal f3 (priority-files--resolve-entry "latest:filename notes/*.md" root)))))))
+
 (ert-deftest priority-files-resolve-latest-no-match ()
   (priority-files-test--with-temp-dir
    (lambda (root)

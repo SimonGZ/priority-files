@@ -107,18 +107,21 @@ Returns nil if the command is unavailable or the timestamp cannot be determined.
                            (message "Birth times unavailable; falling back to modification time for latest:created"))
                          'modified)
                      selector))
-         (annotated (mapcar (lambda (entry)
-                              (let* ((path (car entry))
-                                     (attrs (cdr entry))
-                                     (stamp (pcase selector
-                                              ('created (or (priority-files--file-birth-time path attrs)
-                                                            (priority-files--file-modification-time attrs)))
-                                              (_ (priority-files--file-modification-time attrs)))))
-                                (cons path stamp)))
-                            annotated-attrs)))
-    (car (car (cl-sort annotated
-                       (lambda (a b)
-                         (time-less-p (cdr b) (cdr a))))))))
+         (annotated (unless (eq selector 'filename)
+                      (mapcar (lambda (entry)
+                                (let* ((path (car entry))
+                                       (attrs (cdr entry))
+                                       (stamp (pcase selector
+                                                ('created (or (priority-files--file-birth-time path attrs)
+                                                              (priority-files--file-modification-time attrs)))
+                                                (_ (priority-files--file-modification-time attrs)))))
+                                  (cons path stamp)))
+                              annotated-attrs))))
+    (if (eq selector 'filename)
+        (car (sort matches #'string-greaterp))
+      (car (car (cl-sort annotated
+                         (lambda (a b)
+                           (time-less-p (cdr b) (cdr a)))))))))
 
 (defun priority-files--resolve-latest-entry (mode glob root)
   "Resolve a latest directive with MODE and GLOB relative to ROOT."
@@ -129,8 +132,10 @@ Returns nil if the command is unavailable or the timestamp cannot be determined.
                      'modified)
                     ((string= normalized "created")
                      'created)
+                    ((string= normalized "filename")
+                     'filename)
                     (t
-                     (message "Unknown latest selector '%s'; supported selectors are modified, created" mode)
+                     (message "Unknown latest selector '%s'; supported selectors are modified, created, filename" mode)
                      nil)))
          (matches (and selector (priority-files--collect-matches glob root))))
     (cond

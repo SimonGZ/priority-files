@@ -50,6 +50,7 @@ The syntax is `latest[:MODE] GLOB`, where `MODE` defaults to `modified`. Valid m
 
 - `modified`: pick the file with the most recent modification time
 - `created`: pick the file with the newest birth/creation time; if the filesystem does not track birth times, the directive automatically falls back to modification time.
+- `filename`: pick the file that is last in alphabetical order (useful for date-based filenames like `YYYYMMDD`); sorts matches by filename in descending order.
 
 Patterns are resolved with `file-expand-wildcards`, so you can use globbing such as `*.md` or `**/*.org`. Only files within the project root are considered.
 
